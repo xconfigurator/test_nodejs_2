@@ -8,6 +8,8 @@ log.level = 'trace'
 const http = require('http')
 const common = require('./libs/common') // 自定义的一些通用函数
 
+const fs = require('fs')
+
 function processData(data, req, res) {
     // 解析二进制文件上传数据
     let post = {}
@@ -47,8 +49,11 @@ function processData(data, req, res) {
                     Content-Disposition: form-data; name="user"  |  hei
                      */
                     log.trace('普通数据')
-                    // TODO P16 7301
-                    // haha
+                    content = content.toString()
+                    let name = disposition.split('; ')[1].split('=')[1] + ''
+                    log.trace('name = ' + name)
+                    name = name.substring(1, name.length - 1)
+                    post[name] = content // key:value
                 } else {
                     // 文件数据
                     /*
@@ -56,6 +61,22 @@ function processData(data, req, res) {
                     Content-Type: text/plain
                     */
                     log.trace('文件数据')
+                    let [line1, line2] = disposition.split('\r\n')
+                    let [, name, filename] = line1.split('; ') // 解构赋值
+                    let type = line2.split(': ')[1]
+                    
+                    name = name.split('=')[1] + ''
+                    name = name.substring(1, name.length - 1)
+
+                    filename = filename.split('=')[1] + ''
+                    filename = filename.substring(1, filename.length - 1)
+
+                    log.trace(name, filename, type)
+                    log.trace(name.toString(), filename.toString(), type.toString())
+                    log.trace(content)
+                    log.trace(content.toString())
+
+                    // fs.writeFile('' + )
                 }
             })
         }
@@ -67,13 +88,13 @@ let server = http.createServer((req, res) => {
     let arr = []
     
     req.on('data', data=>{
-        log.debug('data')
+        log.trace('data')
         arr.push(data)
     })
 
     req.on('end', () => {
         let data = Buffer.concat(arr)
-        log.debug(data)
+        log.trace(data)
 
         // 处理上传数据
         processData(data, req, res)
