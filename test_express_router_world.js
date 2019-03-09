@@ -10,7 +10,7 @@ let router=express.Router()
 // /world
 router.get('/', (req, res) => {
     log.info('/world work')
-    res.send('hello')
+    res.send('world')
 })
 
 module.exports=router
